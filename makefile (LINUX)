@@ -1,0 +1,91 @@
+#!bin/bash
+
+.PHONY: build compile run clean create cleanF check log help
+#### PATH OF MAIN
+MAIN_PATH=.
+
+MAIN_INCLUDE_PATH=$(MAIN_PATH)
+
+#### PATH OF SRC
+# Header files are the same position of Cpp files
+LIB_PATH=LIB
+SRC_PATH=$(LIB_PATH)/Human
+SRC_PATH+=$(LIB_PATH)/Ticket
+SRC_PATH+=$(LIB_PATH)/Passenger
+
+#### PATH OF BUILD
+BUILD_PATH=BUILD
+BIN_PATH=$(BUILD_PATH)/BIN
+OBJ_PATH=$(BUILD_PATH)/OBJ/LIB
+OBJ_MAIN_PATH=$(BUILD_PATH)/OBJ
+
+#------ MAIN FILE
+MAIN_FILE=$(wildcard $(MAIN_PATH)/*.cpp)
+MAIN_NAME_EXT=$(notdir $(MAIN_FILE))
+MAIN_NAME=$(subst .cpp,,$(MAIN_NAME_EXT))
+
+MAIN_OBJ=$(OBJ_MAIN_PATH)/$(MAIN_NAME).o
+
+
+#------ SRC FILE
+SRC_FILE=$(foreach SRC_PATH,$(SRC_PATH),$(wildcard $(SRC_PATH)/*.cpp))
+SRC_NAME_EXT=$(foreach SRC_FILE,$(SRC_FILE),$(notdir $(SRC_FILE)))
+SRC_NAME=$(subst .cpp,,$(SRC_NAME_EXT))
+
+SRC_OBJ:=$(foreach SRC_NAME,$(SRC_NAME),$(OBJ_PATH)/$(SRC_NAME).o)
+
+
+#------ EXECUTABLE FILE
+EXE_FILE=$(BIN_PATH)/$(MAIN_NAME)
+
+#--------------------------------------------------------------
+CC = g++
+CFLAGS = -Wall -g
+LIBS = -lm
+
+#============= BUILD CMD
+build:	compile $(EXE_FILE)
+
+compile: check $(SRC_OBJ) $(MAIN_OBJ)
+
+$(SRC_OBJ):
+	$(CC) $(CFLAGS) -I $(@:$(OBJ_PATH)/%.o=$(LIB_PATH)/%)/ -c $(@:$(OBJ_PATH)/%.o=$(LIB_PATH)/%)/$(@F:%.o=%.cpp) -o $@
+
+$(MAIN_OBJ):$(MAIN_FILE)
+	$(CC) $(CFLAGS) -I $(MAIN_INCLUDE_PATH)/ -c $< -o $@
+
+# @echo $(CC) $(CFLAGS) -o $@ $(MAIN_FILE) $(SRC_OBJ) $(LIBS)
+$(EXE_FILE):
+	$(CC) $(CFLAGS) -o $@ $(MAIN_OBJ) $(SRC_OBJ) $(LIBS)
+
+#============= RUN CMD
+run:
+	@if [ -f "$(EXE_FILE)" ];then $(EXE_FILE);else echo EXECUTABLE FILE DO NOT EXIST;fi
+
+#============= CLEAN CMD
+clean:
+	@if [ -d "$(BUILD_PATH)" ];then rm -fr BUILD;else echo NOT FOUND FOLDER!;fi
+
+#============= CREATE CMD
+create:
+	@if [ -d "$(BUILD_PATH)" ];then echo EXIST FOLDER!;else mkdir -p $(OBJ_PATH);mkdir $(BIN_PATH);fi
+
+#============= CLEANF CMD
+cleanF:
+	@find BUILD/ -type f -name \*.o -delete
+	@find BUILD/ -type f -name \* -delete
+
+#============= CHECK CMD	
+check:
+	@if [ -d "$(BUILD_PATH)" ];then find BUILD/ -type f -name \*.o -delete;find BUILD/ -type f -name \* -delete;else mkdir -p $(OBJ_PATH);mkdir $(BIN_PATH);fi
+
+#============= PRINT CMD
+log-%:
+	@echo $($(subst log-,,$@))
+
+#============= help CMD
+help:
+	@echo 1 - [make compile]: to compile the project
+	@echo 2 - [make build]: to build the project
+	@echo 3 - [make run]: to run the project
+	@echo 4 - [make clean]: to delete the BUILD folder
