@@ -1,6 +1,6 @@
 @echo off
 
-title [Tqk]__ Rename .wslconfig
+title [Tqk]__ Rename WSL Config File
 
 setlocal EnableDelayedExpansion
 set __name=.wslconfig
@@ -63,7 +63,7 @@ echo [ WARNING ] ===^> YOUR NUMBER IS NOT IN THE LIST^^!
 
 :__END
 echo.
-echo END OF PROGRAM^!
+echo END OF PROGRAM^^!
 echo.
 echo ------------------------[ Made by TqK ]---------------------------
 echo.
